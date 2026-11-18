@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>프로젝트 노트 · 풍수지리</title>
+<style>
+  :root {
+    --bg: #f7f6f2;
+    --card: #ffffff;
+    --ink: #22252a;
+    --muted: #7a7f87;
+    --line: #e6e3dc;
+    --accent: #3d6b5a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.75;
+    letter-spacing: -0.01em;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    -webkit-text-size-adjust: 100%;
+  }
+  .wrap {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 32px 20px 64px;
+  }
+  header { margin-bottom: 28px; }
+  .label-top {
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin: 0 0 6px;
+  }
+  h1 {
+    font-size: 24px;
+    line-height: 1.4;
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+  section {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 20px 20px 18px;
+    margin-bottom: 16px;
+  }
+  h2 {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+  .value {
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.6;
+    margin: 0;
+  }
+  .tag {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 999px;
+    background: #e8f0ec;
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  ul.todo { list-style: none; margin: 0; padding: 0; }
+  ul.todo li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  ul.todo li:last-child { border-bottom: none; }
+  ul.todo input[type="checkbox"] {
+    width: 20px; height: 20px;
+    flex-shrink: 0;
+    accent-color: var(--accent);
+  }
+  input[type="text"] {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    background: transparent;
+    font: inherit;
+    color: inherit;
+    letter-spacing: inherit;
+    padding: 4px 0;
+    outline: none;
+  }
+  input[type="text"]::placeholder { color: #b5b8bd; }
+  ul.todo li.done input[type="text"] {
+    text-decoration: line-through;
+    color: var(--muted);
+  }
+  .log-row {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .log-row:last-child { border-bottom: none; }
+  .date {
+    flex-shrink: 0;
+    width: 52px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+    color: var(--accent);
+  }
+  .add-btn {
+    margin-top: 10px;
+    background: none;
+    border: 1px dashed var(--line);
+    border-radius: 10px;
+    width: 100%;
+    padding: 10px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  @media (max-width: 400px) {
+    .wrap { padding: 24px 14px 48px; }
+    h1 { font-size: 21px; }
+    section { padding: 18px 16px 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="label-top">PROJECT NOTE</p>
+    <h1>풍수지리 관심있는 사람 모으기</h1>
+  </header>
+
+  <section>
+    <h2>프로젝트 한 줄</h2>
+    <p class="value">풍수지리 관심있는 사람 모으기</p>
+  </section>
+
+  <section>
+    <h2>주제</h2>
+    <p class="value"><span class="tag">풍수지리</span></p>
+  </section>
+
+  <section>
+    <h2>할 일</h2>
+    <ul class="todo" id="todo">
+      <li><input type="checkbox"><input type="text" placeholder="할 일 1"></li>
+      <li><input type="checkbox"><input type="text" placeholder="할 일 2"></li>
+      <li><input type="checkbox"><input type="text" placeholder="할 일 3"></li>
+      <li><input type="checkbox"><input type="text" placeholder="할 일 4"></li>
+      <li><input type="checkbox"><input type="text" placeholder="할 일 5"></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>날짜별 기록</h2>
+    <div id="log">
+      <div class="log-row"><span class="date">11/18</span><input type="text" placeholder="오늘 한 줄"></div>
+    </div>
+    <button class="add-btn" id="addLog" type="button">+ 오늘 기록 추가</button>
+  </section>
+</div>
+
+<script>
+  const KEY = 'fengshui-project-note';
+  const todo = document.getElementById('todo');
+  const log = document.getElementById('log');
+
+  function save() {
+    const data = {
+      todo: [...todo.querySelectorAll('li')].map(li => ({
+        done: li.querySelector('input[type=checkbox]').checked,
+        text: li.querySelector('input[type=text]').value
+      })),
+      log: [...log.querySelectorAll('.log-row')].map(r => ({
+        date: r.querySelector('.date').textContent,
+        text: r.querySelector('input').value
+      }))
+    };
+    try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) {}
+  }
+
+  function addLogRow(date, text) {
+    const row = document.createElement('div');
+    row.className = 'log-row';
+    row.innerHTML = '<span class="date"></span><input type="text" placeholder="오늘 한 줄">';
+    row.querySelector('.date').textContent = date;
+    row.querySelector('input').value = text || '';
+    log.appendChild(row);
+    return row;
+  }
+
+  function load() {
+    let data = null;
+    try { data = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+    if (!data) return;
+    todo.querySelectorAll('li').forEach((li, i) => {
+      const d = data.todo && data.todo[i];
+      if (!d) return;
+      li.querySelector('input[type=checkbox]').checked = d.done;
+      li.querySelector('input[type=text]').value = d.text;
+      li.classList.toggle('done', d.done);
+    });
+    if (data.log && data.log.length) {
+      log.innerHTML = '';
+      data.log.forEach(r => addLogRow(r.date, r.text));
+    }
+  }
+
+  todo.addEventListener('change', e => {
+    if (e.target.type === 'checkbox') e.target.parentElement.classList.toggle('done', e.target.checked);
+    save();
+  });
+  document.addEventListener('input', save);
+
+  document.getElementById('addLog').addEventListener('click', () => {
+    const now = new Date();
+    const today = (now.getMonth() + 1) + '/' + now.getDate();
+    const exists = [...log.querySelectorAll('.date')].some(d => d.textContent === today);
+    if (exists) return;
+    addLogRow(today, '').querySelector('input').focus();
+    save();
+  });
+
+  load();
+</script>
+</body>
+</html>
